@@ -2,7 +2,7 @@ import {
   hqEventSchema,
   type HqEvent,
   type HqEventName,
-} from "@musakonttori/platform-contracts";
+} from "../index";
 
 export interface HqOutboxRecord {
   eventId: string;

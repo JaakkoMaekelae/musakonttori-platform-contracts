@@ -5,11 +5,11 @@ import {
   eventsPageFixture,
   manifestFixture,
   signHqRequest,
-} from "@musakonttori/platform-contracts";
+} from "../index";
 
-import { createHqConfig } from "../config";
-import { createHqRoutes } from "../next";
-import { assertHqContract } from "../testing";
+import { createHqConfig } from "../integration/config";
+import { createHqRoutes } from "../integration/next";
+import { assertHqContract } from "../integration/testing";
 
 const SECRET = "integration-secret";
 const CLIENT_ID = "client_1";

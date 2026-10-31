@@ -16,7 +16,7 @@ import {
   type PaymentDto,
   type SupportContext,
   type SupportContextInput,
-} from "@musakonttori/platform-contracts";
+} from "../index";
 
 export const HQ_CONTRACT_VERSION = "1.0.0";
 

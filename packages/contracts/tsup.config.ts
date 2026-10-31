@@ -7,6 +7,7 @@ export default defineConfig({
     collector: "src/collector.ts",
     auth: "src/auth.ts",
     fixtures: "src/fixtures.ts",
+    "integration/index": "src/integration/index.ts",
   },
   format: ["esm", "cjs"],
   dts: false,

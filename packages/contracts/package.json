@@ -35,6 +35,11 @@
       "types": "./dist/fixtures.d.ts",
       "import": "./dist/fixtures.js",
       "require": "./dist/fixtures.cjs"
+    },
+    "./integration": {
+      "types": "./dist/integration/index.d.ts",
+      "import": "./dist/integration/index.js",
+      "require": "./dist/integration/index.cjs"
     }
   },
   "files": [

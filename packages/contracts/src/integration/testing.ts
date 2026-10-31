@@ -4,7 +4,7 @@ import {
   hqHealthSchema,
   hqManifestSchema,
   signHqRequest,
-} from "@musakonttori/platform-contracts";
+} from "../index";
 
 import type { HqConfig } from "./config";
 

@@ -11,7 +11,7 @@ import {
   verifyHqRequest,
   type HeaderSource,
   type HqAuthFailureCode,
-} from "@musakonttori/platform-contracts";
+} from "../index";
 
 import { buildHealth, buildManifest, type HqConfig } from "./config";
 
