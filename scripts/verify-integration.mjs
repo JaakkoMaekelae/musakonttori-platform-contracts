@@ -11,7 +11,7 @@
  *   COLLECTOR_URL, OBSERVABILITY_INGEST_KEY, SERVICE
  *                                               -> POST /v1/errors (synthetic)
  */
-import { signHqRequest, hqManifestSchema, hqHealthSchema, eventsPageSchema } from "../packages/contracts/dist/index.js";
+import { signHqRequest, hqManifestSchema, hqHealthSchema, eventsPageSchema } from "../dist/index.js";
 
 const targets = JSON.parse(process.env.HQ_TARGETS ?? "[]");
 if (targets.length === 0) {
