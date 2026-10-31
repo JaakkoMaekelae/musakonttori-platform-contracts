@@ -1,0 +1,356 @@
+import { z } from "zod";
+
+/**
+ * Canonical collector -> HQ read API.
+ *
+ * The collector owns this API and imports these schemas itself, so the shapes
+ * cannot drift from what HQ validates.
+ */
+
+const iso = z
+  .string()
+  .min(10)
+  .refine((value) => !Number.isNaN(Date.parse(value)), "invalid date");
+
+const nullableIso = iso.nullable().optional();
+
+export const errorSeveritySchema = z.enum(["critical", "error", "warning", "info"]);
+export const errorStatusSchema = z.enum([
+  "new",
+  "open",
+  "acknowledged",
+  "resolved",
+  "ignored",
+  "regressed",
+]);
+
+export const errorGroupSchema = z.object({
+  id: z.string(),
+  service: z.string(),
+  environment: z.string(),
+  fingerprint: z.string(),
+  title: z.string(),
+  message: z.string(),
+  category: z.string(),
+  errorType: z.string(),
+  errorCode: z.string().nullable().optional(),
+  severity: errorSeveritySchema,
+  status: errorStatusSchema,
+  operation: z.string().nullable().optional(),
+  provider: z.string().nullable().optional(),
+  firstSeenAt: iso,
+  lastSeenAt: iso,
+  occurrenceCount: z.number().int().nonnegative(),
+  affectedUserCount: z.number().int().nonnegative(),
+  firstDeploymentId: z.string().nullable().optional(),
+  lastDeploymentId: z.string().nullable().optional(),
+  isRegression: z.boolean(),
+  regressionCount: z.number().int().nonnegative(),
+  assignedTo: z.string().nullable().optional(),
+  assignedTeam: z.string().nullable().optional(),
+  internalNote: z.string().nullable().optional(),
+  resolvedAt: nullableIso,
+  ignoredAt: nullableIso,
+  acknowledgedAt: nullableIso,
+  returnedAt: nullableIso,
+  createdAt: iso,
+  updatedAt: iso,
+});
+
+export type ErrorGroupRecord = z.infer<typeof errorGroupSchema>;
+
+export const errorGroupNoteSchema = z.object({
+  id: z.string(),
+  groupId: z.string(),
+  author: z.string(),
+  body: z.string(),
+  createdAt: iso,
+});
+
+export const errorOccurrenceSchema = z.object({
+  id: z.string(),
+  groupId: z.string(),
+  eventId: z.string(),
+  service: z.string(),
+  environment: z.string(),
+  timestamp: iso,
+  message: z.string(),
+  stack: z.string().nullable().optional(),
+  traceId: z.string().nullable().optional(),
+  spanId: z.string().nullable().optional(),
+  requestId: z.string().nullable().optional(),
+  route: z.string().nullable().optional(),
+  method: z.string().nullable().optional(),
+  operation: z.string().nullable().optional(),
+  deploymentId: z.string().nullable().optional(),
+  gitCommit: z.string().nullable().optional(),
+  market: z.string().nullable().optional(),
+  locale: z.string().nullable().optional(),
+  userId: z.string().nullable().optional(),
+  accountId: z.string().nullable().optional(),
+  entityType: z.string().nullable().optional(),
+  entityId: z.string().nullable().optional(),
+  provider: z.string().nullable().optional(),
+  statusCode: z.number().int().nullable().optional(),
+  latencyMs: z.number().int().nullable().optional(),
+  category: z.string(),
+  severity: errorSeveritySchema,
+  metadata: z.record(z.string(), z.unknown()).nullable().optional(),
+  createdAt: iso,
+});
+
+export type ErrorOccurrenceRecord = z.infer<typeof errorOccurrenceSchema>;
+
+export const serviceSummarySchema = z.object({
+  id: z.string(),
+  service: z.string(),
+  displayName: z.string(),
+  criticality: z.string(),
+  owner: z.string().nullable().optional(),
+  repository: z.string().nullable().optional(),
+  vercelProject: z.string().nullable().optional(),
+  dependencies: z.array(z.string()),
+  docsUrl: z.string().nullable().optional(),
+  createdAt: iso,
+  updatedAt: iso,
+});
+
+export type ServiceSummary = z.infer<typeof serviceSummarySchema>;
+
+export const deploymentSchema = z.object({
+  id: z.string(),
+  service: z.string(),
+  providerDeploymentId: z.string(),
+  provider: z.string(),
+  environment: z.string(),
+  gitCommit: z.string().nullable().optional(),
+  gitBranch: z.string().nullable().optional(),
+  version: z.string().nullable().optional(),
+  startedAt: nullableIso,
+  completedAt: nullableIso,
+  status: z.string(),
+  metrics: z.record(z.string(), z.unknown()).nullable().optional(),
+  metadata: z.record(z.string(), z.unknown()).nullable().optional(),
+  createdAt: iso,
+  updatedAt: iso,
+});
+
+export type DeploymentRecord = z.infer<typeof deploymentSchema>;
+
+export const incidentSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  severity: errorSeveritySchema,
+  status: z.string(),
+  startedAt: iso,
+  detectedAt: iso,
+  acknowledgedAt: nullableIso,
+  resolvedAt: nullableIso,
+  affectedServices: z.array(z.string()),
+  affectedMarkets: z.array(z.string()),
+  summary: z.string().nullable().optional(),
+  suspectedDeploymentId: z.string().nullable().optional(),
+  createdBy: z.string().nullable().optional(),
+  acknowledgedBy: z.string().nullable().optional(),
+  resolvedBy: z.string().nullable().optional(),
+  createdAt: iso,
+  updatedAt: iso,
+});
+
+export type IncidentRecord = z.infer<typeof incidentSchema>;
+
+export const healthSnapshotSchema = z.object({
+  id: z.string(),
+  service: z.string(),
+  environment: z.string(),
+  timestamp: iso,
+  requestCount: z.number().int().nonnegative(),
+  errorCount: z.number().int().nonnegative(),
+  errorRate: z.number(),
+  p50Latency: z.number().int().nullable().optional(),
+  p95Latency: z.number().int().nullable().optional(),
+  p99Latency: z.number().int().nullable().optional(),
+  status: z.string(),
+  createdAt: iso,
+});
+
+export type HealthSnapshotRecord = z.infer<typeof healthSnapshotSchema>;
+
+export const webhookExecutionSchema = z.object({
+  id: z.string(),
+  service: z.string(),
+  provider: z.string(),
+  eventType: z.string(),
+  externalEventId: z.string().nullable().optional(),
+  receivedAt: iso,
+  processingStartedAt: nullableIso,
+  processingCompletedAt: nullableIso,
+  durationMs: z.number().int().nullable().optional(),
+  status: z.string(),
+  attempts: z.number().int().nonnegative(),
+  idempotencyResult: z.string().nullable().optional(),
+  errorCode: z.string().nullable().optional(),
+  traceId: z.string().nullable().optional(),
+  requestId: z.string().nullable().optional(),
+  errorGroupId: z.string().nullable().optional(),
+  metadata: z.record(z.string(), z.unknown()).nullable().optional(),
+  createdAt: iso,
+});
+
+export type WebhookExecutionRecord = z.infer<typeof webhookExecutionSchema>;
+
+export const cursorPageSchema = <T extends z.ZodTypeAny>(item: T) =>
+  z.object({
+    items: z.array(item),
+    nextCursor: z.string().nullable().optional(),
+    limit: z.number().int().positive().optional(),
+  });
+
+export const errorGroupDetailSchema = z.object({
+  group: errorGroupSchema,
+  notes: z.array(errorGroupNoteSchema),
+  recentOccurrences: z.array(errorOccurrenceSchema),
+});
+
+export const serviceDetailSchema = z.object({
+  service: serviceSummarySchema,
+  groups: z.array(errorGroupSchema),
+  deployments: z.array(deploymentSchema),
+});
+
+export const deploymentDetailSchema = z.object({
+  deployment: deploymentSchema,
+  comparison: z.object({
+    newFingerprints: z.array(errorGroupSchema),
+    resolvedFingerprints: z.array(errorGroupSchema),
+    regressions: z.array(errorGroupSchema),
+    errorRateDelta: z.number().nullable(),
+  }),
+});
+
+export const webhookDetailSchema = z.object({
+  webhook: webhookExecutionSchema,
+  errorGroup: errorGroupSchema.nullable(),
+});
+
+export const occurrenceResponseSchema = z.object({
+  occurrence: errorOccurrenceSchema,
+});
+
+export const incidentResponseSchema = z.object({
+  incident: incidentSchema,
+});
+
+export const traceResponseSchema = z.object({
+  traceId: z.string(),
+  occurrenceCount: z.number().int().nonnegative(),
+  occurrences: z.array(errorOccurrenceSchema),
+  externalTraceUrl: z.string().nullable().optional(),
+  rawTraceStored: z.boolean(),
+});
+
+export const externalServiceSchema = z.object({
+  provider: z.string(),
+  groups: z.number().int().nonnegative(),
+  occurrences: z.number().int().nonnegative(),
+  critical: z.number().int().nonnegative(),
+  services: z.array(z.string()),
+  lastSeenAt: nullableIso,
+});
+
+export type ExternalServiceRecord = z.infer<typeof externalServiceSchema>;
+
+export const overviewSchema = z.object({
+  generatedAt: iso,
+  services: z.number().int().nonnegative(),
+  openIncidents: z.number().int().nonnegative(),
+  totalGroups: z.number().int().nonnegative(),
+  errorGroups: z.object({
+    recent: z.number().int().nonnegative(),
+    open: z.number().int().nonnegative(),
+    critical: z.number().int().nonnegative(),
+  }),
+  recentAlertEvents: z.array(z.record(z.string(), z.unknown())),
+  recentDeployments: z.array(deploymentSchema),
+  recentHealthSnapshots: z.array(healthSnapshotSchema),
+  recentGroups: z.array(errorGroupSchema),
+});
+
+export type OverviewRecord = z.infer<typeof overviewSchema>;
+
+export const liveSnapshotSchema = z.object({
+  generatedAt: z.string().nullable(),
+  degraded: z.object({ redis: z.boolean(), db: z.boolean() }),
+  services: z.array(
+    z.object({
+      service: z.string(),
+      errors1m: z.number().nullable(),
+      errors5m: z.number().nullable(),
+      errorsPerMin5m: z.number().nullable(),
+      errorRate1m: z.number().nullable(),
+      affectedUsers5m: z.number().nullable(),
+    })
+  ),
+  spikes: z.array(
+    z.object({
+      fingerprint: z.string(),
+      service: z.string().nullable(),
+      operation: z.string().nullable(),
+      count1m: z.number().nullable(),
+      baselinePerMin: z.number().nullable(),
+      ratio: z.number().nullable(),
+    })
+  ),
+  cooldowns: z.array(
+    z.object({
+      ruleId: z.string(),
+      until: z.string().nullable(),
+    })
+  ),
+  unknown: z.array(z.string()),
+});
+
+export type LiveSnapshotRecord = z.infer<typeof liveSnapshotSchema>;
+
+/** Request bodies HQ sends to the collector. */
+export const incidentCreateRequestSchema = z
+  .object({
+    title: z.string().min(1).max(200),
+    severity: errorSeveritySchema.default("critical"),
+    status: z.string().default("open"),
+    startedAt: iso.optional(),
+    affectedServices: z.array(z.string().min(1)).default([]),
+    affectedMarkets: z.array(z.string().min(1)).default([]),
+    summary: z.string().max(10000).optional(),
+    suspectedDeploymentId: z.string().optional(),
+    createdBy: z.string().optional(),
+  })
+  .strict();
+
+export const incidentPatchRequestSchema = z
+  .object({
+    title: z.string().min(1).max(200).optional(),
+    severity: errorSeveritySchema.optional(),
+    status: z.string().optional(),
+    summary: z.string().max(10000).optional(),
+    acknowledgedBy: z.string().optional(),
+    resolvedBy: z.string().optional(),
+  })
+  .strict();
+
+export const errorGroupPatchRequestSchema = z
+  .object({
+    status: errorStatusSchema.optional(),
+    severity: errorSeveritySchema.optional(),
+    assignedTo: z.string().nullable().optional(),
+    assignedTeam: z.string().nullable().optional(),
+    note: z.string().max(10000).optional(),
+    internalNote: z.string().nullable().optional(),
+  })
+  .strict();
+
+export const collectorErrorResponseSchema = z.object({
+  error: z.string(),
+  message: z.string(),
+  details: z.unknown().optional(),
+});

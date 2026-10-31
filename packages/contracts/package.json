@@ -1,0 +1,57 @@
+{
+  "name": "@musakonttori/platform-contracts",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Canonical product<->HQ and collector<->HQ contracts for the Musakonttori platform",
+  "packageManager": "pnpm@11.18.0",
+  "engines": {
+    "node": ">=24"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./product": {
+      "types": "./dist/product.d.ts",
+      "import": "./dist/product.js",
+      "require": "./dist/product.cjs"
+    },
+    "./collector": {
+      "types": "./dist/collector.d.ts",
+      "import": "./dist/collector.js",
+      "require": "./dist/collector.cjs"
+    },
+    "./auth": {
+      "types": "./dist/auth.d.ts",
+      "import": "./dist/auth.js",
+      "require": "./dist/auth.cjs"
+    },
+    "./fixtures": {
+      "types": "./dist/fixtures.d.ts",
+      "import": "./dist/fixtures.js",
+      "require": "./dist/fixtures.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup && tsc -p tsconfig.build.json --emitDeclarationOnly",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "tsup": "^9.0.0",
+    "typescript": "7.0.2",
+    "vitest": "^5.0.5"
+  }
+}
